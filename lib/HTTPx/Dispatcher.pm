@@ -2,8 +2,7 @@ package HTTPx::Dispatcher;
 use strict;
 use warnings;
 use 5.00800;
-our $VERSION = '0.01';
-use Class::Data::Inheritable;
+our $VERSION = '0.02';
 use HTTPx::Dispatcher::Rule;
 use Scalar::Util qw/blessed/;
 use Carp;
@@ -13,33 +12,30 @@ our @EXPORT = qw/connect match uri_for/;
 
 my $rules;
 
-sub connect
-{
-    my $pkg = caller(0);
+sub connect {
+    my $pkg  = caller(0);
     my @args = @_;
 
-    push @{ $rules->{$pkg} } , HTTPx::Dispatcher::Rule->new(@args);
+    push @{ $rules->{$pkg} }, HTTPx::Dispatcher::Rule->new(@args);
 }
 
-sub match
-{
-    my ($class, $req) = @_;
+sub match {
+    my ( $class, $req ) = @_;
     croak "request required" unless blessed $req;
 
-    for my $rule (@{ $rules->{$class} }) {
-        if (my $result = $rule->match($req)) {
+    for my $rule ( @{ $rules->{$class} } ) {
+        if ( my $result = $rule->match($req) ) {
             return $result;
         }
     }
-    return; # no match.
+    return;    # no match.
 }
 
-sub uri_for
-{
-    my ($class, @args) = @_;
+sub uri_for {
+    my ( $class, @args ) = @_;
 
     for my $rule ( @{ $rules->{$class} } ) {
-        if (my $result = $rule->uri_for( @args ) ) {
+        if ( my $result = $rule->uri_for(@args) ) {
             return $result;
         }
     }
@@ -86,6 +82,10 @@ HTTPx::Dispatcher is URI Dispatcher.
 =head1 AUTHOR
 
 Tokuhiro Matsuno E<lt>tokuhirom@gmail.comE<gt>
+
+=head1 THANKS TO
+
+lestrrat
 
 =head1 SEE ALSO
 
