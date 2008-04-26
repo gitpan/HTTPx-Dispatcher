@@ -1,5 +1,13 @@
 Revision history for Perl extension HTTPx::Dispatcher
 
+0.04
+
+    - no feature changes.
+
+0.03
+
+    - BUG FIXED: oops. HTTP::Request->uri returns absolute uri.
+
 0.02
 
     - fixed deps.

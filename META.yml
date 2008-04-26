@@ -3,6 +3,7 @@ abstract: the uri dispatcher
 author: 
   - Tokuhiro Matsuno <tokuhirom@gmail.com>
 build_requires: 
+  Test::MockObject: 0
   Test::More: 0
   YAML: 0
 distribution_type: module
@@ -21,4 +22,4 @@ requires:
   Exporter: 5.58
   HTTP::Request: 1.4
   perl: 5.8.0
-version: 0.02
+version: 0.04

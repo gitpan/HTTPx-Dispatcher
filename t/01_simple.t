@@ -4,15 +4,39 @@ use Test::Base;
 use YAML;
 use HTTPx::Dispatcher;
 use HTTP::Request;
+use Test::MockObject;
 
-plan tests => 1*blocks;
+plan tests => 2*blocks;
 
 filters {
-    input    => [qw/yaml _proc/],
+    dispatcher    => [qw/_proc/],
     expected => [qw//],
 };
 
-run_is input => 'expected';
+run {
+    my $block = shift;
+
+    for my $req ( _apache_req($block), _http_req($block)) {
+        my $res = $block->dispatcher->match( $req );
+        $res = ((not defined $res) ? 'undef' : YAML::Dump($res));
+        $res =~ s/^---\n//;
+        is $res, $block->expected;
+    }
+};
+
+sub _apache_req {
+    my $block = shift;
+    my $method = $block->method || 'GET';
+    (my $uri = $block->uri) =~ s/\?.+//;
+    Test::MockObject->new({})->set_always('uri' => $uri)->set_always( method => $method);
+}
+
+sub _http_req {
+    my $block = shift;
+    my $method = $block->method || 'GET';
+    my $uri = "http://example.com/" . $block->uri;
+    HTTP::Request->new($method, $uri);
+}
 
 my $cnt = 1;
 sub _proc {
@@ -21,33 +45,30 @@ sub _proc {
     eval <<"...";
     package $pkg;
     use HTTPx::Dispatcher;
-    $input->{src};
+    $input;
 ...
 
-    my $method = $input->{method} || 'GET';
-    my $res = $pkg->match(HTTP::Request->new($method, $input->{uri}));
-    $res = ((not defined $res) ? 'undef' : YAML::Dump($res));
-    $res =~ s/^---\n//;
-    $res;
+    $pkg;
 }
-
 
 __END__
 
 ===
---- input
-src: ''
-uri: /
---- expected: undef
+--- dispatcher
+connect '', { controller => 'Root', action => 'index' }
+--- uri: /
+--- expected
+action: index
+args: {}
+controller: Root
 
 ===
---- input
-src: |+
-    connect 'articles/:year/:month' => {
-        controller => 'blog',
-        action     => 'view',
-    };
-uri: /articles/2003/10
+--- dispatcher
+connect 'articles/:year/:month' => {
+    controller => 'blog',
+    action     => 'view',
+};
+--- uri: /articles/2003/10
 --- expected
 action: view
 args:
@@ -56,13 +77,12 @@ args:
 controller: blog
 
 ===
---- input
-src: |+
-    connect 'articles/:year/:month' => {
-        controller => 'blog',
-        action     => 'view',
-    };
-uri: /articles/2003/10
+--- dispatcher
+connect 'articles/:year/:month' => {
+    controller => 'blog',
+    action     => 'view',
+};
+--- uri: /articles/2003/10
 --- expected
 action: view
 args:
@@ -71,10 +91,8 @@ args:
 controller: blog
 
 ===
---- input
-src: |+
-    connect ':controller/:action/:id';
-uri: /user/edit/2
+--- dispatcher: connect ':controller/:action/:id';
+--- uri: /user/edit/2
 --- expected
 action: edit
 args:
@@ -82,17 +100,16 @@ args:
 controller: user
 
 ===
---- input
-src: |+
-    connect 'articles/:year/:month' => {
-        controller => 'blog',
-        action     => 'view',
-        requirements => {
-            year  => qr{\d{2,4}},
-            month => qr{\d{1,2}},
-        }
-    };
-uri: /articles/2003/10
+--- dispatcher
+connect 'articles/:year/:month' => {
+    controller => 'blog',
+    action     => 'view',
+    requirements => {
+        year  => qr{\d{2,4}},
+        month => qr{\d{1,2}},
+    }
+};
+--- uri: /articles/2003/10
 --- expected
 action: view
 args:
@@ -101,10 +118,8 @@ args:
 controller: blog
 
 ===
---- input
-src: |+
-    connect ':controller/:action-:id'
-uri: /user/edit-3
+--- dispatcher: connect ':controller/:action-:id'
+--- uri: /user/edit-3
 --- expected
 action: edit
 args:
@@ -112,32 +127,30 @@ args:
 controller: user
 
 ===
---- input
-src: |+
-    connect 'edit' => {
-        conditions => {
-            method => 'GET',
-        },
-        controller => 'user',
-        action => 'get_root',
-    };
-    connect 'edit' => {
-        conditions => {
-            method => 'POST',
-        },
-        controller => 'user',
-        action => 'post_root',
-    };
-uri: /edit
-method: GET
+--- dispatcher
+connect 'edit' => {
+    conditions => {
+        method => 'GET',
+    },
+    controller => 'user',
+    action => 'get_root',
+};
+connect 'edit' => {
+    conditions => {
+        method => 'POST',
+    },
+    controller => 'user',
+    action => 'post_root',
+};
+--- uri: /edit
+--- method: GET
 --- expected
 action: get_root
 args: {}
 controller: user
 
 ===
---- input
-src: |+
+--- dispatcher
     connect 'edit' => {
         conditions => {
             method => 'GET',
@@ -152,16 +165,15 @@ src: |+
         controller => 'user',
         action => 'post_root',
     };
-uri: /edit
-method: POST
+--- uri: /edit
+--- method: POST
 --- expected
 action: post_root
 args: {}
 controller: user
 
 === function condition(1)
---- input
-src: |+
+--- dispatcher
     connect 'edit' => {
         conditions => {
             function => sub { $_->method =~ /get/i },
@@ -176,16 +188,15 @@ src: |+
         controller => 'user',
         action => 'post_root',
     };
-uri: /edit
-method: POST
+--- uri: /edit
+--- method: POST
 --- expected
 action: post_root
 args: {}
 controller: user
 
 === function condition(2)
---- input
-src: |+
+--- dispatcher
     connect 'edit' => {
         conditions => {
             function => sub { $_->method =~ /get/i },
@@ -200,21 +211,20 @@ src: |+
         controller => 'user',
         action => 'post_root',
     };
-uri: /edit
-method: GET
+--- uri: /edit
+--- method: GET
 --- expected
 action: get_root
 args: {}
 controller: user
 
 === with query
---- input
-src: |+
+--- dispatcher
     connect 'articles/:year/:month' => {
         controller => 'blog',
         action     => 'view',
     };
-uri: /articles/2003/10?query=foo
+--- uri: /articles/2003/10?query=foo
 --- expected
 action: view
 args:
