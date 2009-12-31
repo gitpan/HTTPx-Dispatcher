@@ -55,7 +55,7 @@ __END__
 
 ===
 --- dispatcher
-connect '', { controller => 'Root', action => 'index' }
+connect '/', { controller => 'Root', action => 'index' }
 --- uri: /
 --- expected
 action: index
@@ -64,7 +64,7 @@ controller: Root
 
 ===
 --- dispatcher
-connect 'articles/:year/:month' => {
+connect '/articles/{year}/{month}' => {
     controller => 'blog',
     action     => 'view',
 };
@@ -78,7 +78,7 @@ controller: blog
 
 ===
 --- dispatcher
-connect 'articles/:year/:month' => {
+connect '/articles/{year}/{month}' => {
     controller => 'blog',
     action     => 'view',
 };
@@ -91,7 +91,7 @@ args:
 controller: blog
 
 ===
---- dispatcher: connect ':controller/:action/:id';
+--- dispatcher: connect '/{controller}/{action}/{id}';
 --- uri: /user/edit/2
 --- expected
 action: edit
@@ -101,7 +101,7 @@ controller: user
 
 ===
 --- dispatcher
-connect 'articles/:year/:month' => {
+connect '/articles/{year}/{month}' => {
     controller => 'blog',
     action     => 'view',
     requirements => {
@@ -118,7 +118,7 @@ args:
 controller: blog
 
 ===
---- dispatcher: connect ':controller/:action-:id'
+--- dispatcher: connect '/{controller}/{action}-{id}'
 --- uri: /user/edit-3
 --- expected
 action: edit
@@ -128,14 +128,14 @@ controller: user
 
 ===
 --- dispatcher
-connect 'edit' => {
+connect '/edit' => {
     conditions => {
         method => 'GET',
     },
     controller => 'user',
     action => 'get_root',
 };
-connect 'edit' => {
+connect '/edit' => {
     conditions => {
         method => 'POST',
     },
@@ -151,14 +151,14 @@ controller: user
 
 ===
 --- dispatcher
-    connect 'edit' => {
+    connect '/edit' => {
         conditions => {
             method => 'GET',
         },
         controller => 'user',
         action => 'get_root',
     };
-    connect 'edit' => {
+    connect '/edit' => {
         conditions => {
             method => 'POST',
         },
@@ -174,14 +174,14 @@ controller: user
 
 === function condition(1)
 --- dispatcher
-    connect 'edit' => {
+    connect '/edit' => {
         conditions => {
             function => sub { $_->method =~ /get/i },
         },
         controller => 'user',
         action => 'get_root',
     };
-    connect 'edit' => {
+    connect '/edit' => {
         conditions => {
             function => sub { $_->method =~ /post/i },
         },
@@ -197,14 +197,14 @@ controller: user
 
 === function condition(2)
 --- dispatcher
-    connect 'edit' => {
+    connect '/edit' => {
         conditions => {
             function => sub { $_->method =~ /get/i },
         },
         controller => 'user',
         action => 'get_root',
     };
-    connect 'edit' => {
+    connect '/edit' => {
         conditions => {
             function => sub { $_->method =~ /post/i },
         },
@@ -220,7 +220,7 @@ controller: user
 
 === with query
 --- dispatcher
-    connect 'articles/:year/:month' => {
+    connect '/articles/{year}/{month}' => {
         controller => 'blog',
         action     => 'view',
     };
@@ -231,14 +231,3 @@ args:
   month: 10
   year: 2003
 controller: blog
-
-===
---- dispatcher
-connect 'static/:thing', { controller => 'Root', action => 'index' }
---- uri: /static/some/thing
---- expected
-action: index
-args:
-  thing: some/thing
-controller: Root
-

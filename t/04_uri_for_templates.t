@@ -37,31 +37,31 @@ sub _eval {
 __END__
 
 ===
---- dispatcher: connect ':controller/:action/:id';
+--- dispatcher: connect '/{controller}/{action}/{id}';
 --- uri_for:    {controller => 'blog', action => 'show', id => 3}
 --- expected:   /blog/show/3
 
 ===
---- dispatcher: connect 'blog/:action/:id';
+--- dispatcher: connect '/blog/{action}/{id}';
 --- uri_for:    {action => 'show', id => 3}
 --- expected:   /blog/show/3
 
 ===
 --- dispatcher
-connect 'blog/:action/:id';
-connect ':controller/:action/:id';
+connect '/blog/{action}/{id}';
+connect '/{controller}/{action}/{id}';
 --- uri_for:    {controller => 'entry', action => 'show', id => 3}
 --- expected:   /entry/show/3
 
 ===
 --- dispatcher
-connect 'content/:id' => { controller => 'Content', action => 'show'  };
+connect '/content/{id}' => { controller => 'Content', action => 'show'  };
 --- uri_for:  { controller => 'Content', action => 'show', 'id' => 3 }
 --- expected:   /content/3
 
 ===
 --- dispatcher
-connect '' => { controller => 'Root', action => 'index'  };
+connect '/' => { controller => 'Root', action => 'index'  };
 --- uri_for:  { controller => 'Root', action => 'index' }
 --- expected:   /
 
