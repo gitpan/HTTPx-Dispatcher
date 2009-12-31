@@ -2,11 +2,11 @@ package HTTPx::Dispatcher;
 use strict;
 use warnings;
 use 5.00800;
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 use HTTPx::Dispatcher::Rule;
 use Scalar::Util qw/blessed/;
 use Carp;
-use Exporter 'import';
+use base qw/Exporter/;
 
 our @EXPORT = qw/connect match uri_for/;
 
