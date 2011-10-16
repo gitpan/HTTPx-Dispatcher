@@ -7,6 +7,7 @@ build_requires:
   Test::Base: 0
   Test::More: 0
   Test::Requires: 0
+  YAML: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
@@ -30,4 +31,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://github.com/tokuhirom/p5-httpx-dispatcher.git
-version: 0.09
+version: 0.10
